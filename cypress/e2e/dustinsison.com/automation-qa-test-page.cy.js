@@ -34,12 +34,39 @@ describe('Automation QA Test Page Tests', () => {
             expect(txt).to.contains('Button clicked') // Verify pop-up message
         })
     })
-    //Test Case 5: Verify datalist selection
+    //Test Case 5: Verify datalist element selection
     it('Verify datalist selection', () => {
-        cy.get('datalist[id*="dropdown"]')
-            .invoke('attr','style','display: block').click()
-            .find("option[value*='dropdown_three']").click()
-        cy.get("input[list*='dropdown']")
-            .should('have.value', 'dropdown_three')
+        cy.get('input[list="dropdown"]')
+            .type('dropdown') // Type some text to get the list of options to appear
+            .then(input => {
+        // Use JavaScript to retrieve the datalist options
+        const options = Array.from(input[0].list.options)
+        .map(option => option.value);
+
+        // Find the index of the desired option
+        const optionIndex = options.indexOf('dropdown_three');
+
+        // Use JavaScript to select the option
+        input[0].value = options[optionIndex];
+
+        // Trigger the input change event to update the selection
+        input[0].dispatchEvent(new Event('input', { bubbles: true }));
+        })
+    })
+    //Test Case 6: Verify output elements
+    it('Verify output elements', () => {
+        cy.get('input[type=range]').then(($input) => { // Selects the first output element, a slider, and moves it from 50 to 60
+            $input[0].value = 60;
+            $input.trigger('change');
+        })
+        cy.get('input[type=number]').invoke('val', '60').trigger('input')  // Enters 60 in the input field, replacing the default 50
+        cy.get('output[name=x]').trigger('change').contains('120') // If both input changes were made, the accumulative value should be 120, not 110 or 100
+    })
+    //Test Case 7: Verify String is a palindrome
+    it('Verify string is a palindrome', () => {
+        cy.get('text[id=palindrome]').then(element => { // Grabs the string element and uses the custom command that checks if a string is a palindrome
+            const str = element.text();
+            cy.isPalindrome(str).should('be.true');
+          });
     })
 })

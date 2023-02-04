@@ -44,3 +44,6 @@ Cypress.Commands.add("getIframeBody", (selector) => {
         // chaining more Cypress commands, like ".find(...)"
         .then(cy.wrap)
 })
+Cypress.Commands.add('isPalindrome', str => {
+    return str === str.split('').reverse().join('');
+});
