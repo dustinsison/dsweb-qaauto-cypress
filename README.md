@@ -16,7 +16,8 @@ This repository contains automated tests for the website DustinSison.com. The te
 ### Installation Steps
 1. Clone repository locally
 2. Navigate to local repository in Terminal
-3. Open Cypress using command 'npx cypress open' in Terminal
+3. Install Cypress using `npm install cypress`
+4. Open Cypress using command 'npx cypress open' in Terminal
 
 ### Available Tests:
 - Account pages (Subscriber-level account)
