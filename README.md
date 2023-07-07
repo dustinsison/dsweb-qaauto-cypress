@@ -2,10 +2,11 @@
 Automated tests for dustinsison.com written in Cypress
 
 ### Update Log:
+[July 6, 2023] - Added Cypress CI Testing with GitHub Actions
 [January 31, 2023] - Initialized Repository
 
 ### Introduction
-This repository contains automated tests for the website DustinSison.com. The tests are written using the Cypress autmomation framework. These tests are ran locally, but test the live website online.
+This repository contains automated tests for the website DustinSison.com. The tests are written using the Cypress autmomation framework. These tests are ran locally, and through GitHub Actions with any push, and test the live website online.
 
 ### Dependencies
 - Cypress package version: 12.5.0
