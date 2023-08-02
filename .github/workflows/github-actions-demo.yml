@@ -1,18 +1,20 @@
-name: GitHub Actions Demo
-run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
+name: GitHub Actions - Cypress Tests
+run-name: ${{ github.actor }} committed new code to the repository, executing Cypress tests
 on: [push]
 jobs:
-  Explore-GitHub-Actions:
+  Execute-Cypress-Tests:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
-      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
-      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+      - run: echo "Cypress testing was automatically triggered by a ${{ github.event_name }} event."
+      - run: echo "Testing is now running on a ${{ runner.os }} server hosted by GitHub"
+      - run: echo "Current name of the branch being tested is ${{ github.ref }} for the repository ${{ github.repository }}."
       - name: Check out repository code
         uses: actions/checkout@v3
-      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
+      - run: echo "${{ github.repository }} repository has been cloned to the runner."
+      - run: echo "Cypress testing is now ready to begin on the runner."
       - name: List files in the repository
         run: |
           ls ${{ github.workspace }}
-      - run: echo "🍏 This job's status is ${{ job.status }}."
+      - name: Cypress.io
+        uses: cypress-io/github-action@v5.8.2
+      - run: echo "Cypress tests status - ${{ job.status }}."
