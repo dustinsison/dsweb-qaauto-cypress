@@ -27,6 +27,7 @@ This repository contains automated tests for the website DustinSison.com. The te
 - Homepage
 - Navigation Menu
 - Project pages
+- Simple SQL Test
 
 ### Credits:
 Dustin Sison
