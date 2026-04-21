@@ -2,6 +2,7 @@
 Automated tests for dustinsison.com written in Cypress
 
 ### Update Log:
+[April 20, 2026] - Added Slackbot support for automated test runs
 [January 31, 2023] - Initialized Repository
 
 ### Introduction
