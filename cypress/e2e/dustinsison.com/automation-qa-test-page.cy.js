@@ -23,9 +23,9 @@ describe('Automation QA Test Page Tests', () => {
         cy.get("option[value*='option_2']")
             .should('have.selected','true') // Confirm second option is selected
         cy.get("option[value*='option_3']")
-            .should('have.selected','true') // Confirm second option is selected
+            .should('have.selected','true') // Confirm third option is selected
         cy.get("option[value*='option_4']")
-            .should('have.selected','true') // Confirm second option is selected
+            .should('have.selected','true') // Confirm forth option is selected
     })
     //Test Case 4: Verify button press and message
     it('Verify button press and message',() => {
