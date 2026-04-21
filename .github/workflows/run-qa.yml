@@ -12,7 +12,7 @@ on:
         required: true
         default: "https://dustinsison.com"
       response_url:
-        description: "Slack response URL"
+        description: "Slack response URL for posting the final result"
         required: false
         default: ""
 
@@ -38,3 +38,51 @@ jobs:
         run: npx cypress run
         env:
           CYPRESS_BASE_URL: ${{ inputs.base_url }}
+
+      - name: Upload Cypress artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-artifacts-${{ inputs.site_key }}
+          path: |
+            cypress/screenshots
+            cypress/videos
+
+      - name: Post result to Slack
+        if: ${{ always() && inputs.response_url != '' }}
+        env:
+          GITHUB_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          RESPONSE_URL: ${{ inputs.response_url }}
+          SITE_KEY: ${{ inputs.site_key }}
+          BASE_URL: ${{ inputs.base_url }}
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          node <<'EOF'
+          const status = process.env.JOB_STATUS;
+          const icon = status === "success" ? ":white_check_mark:" : ":x:";
+          const headline =
+            status === "success" ? "*Cypress QA run passed*" : "*Cypress QA run failed*";
+          const text = [
+            `${icon} ${headline}`,
+            `*Site:* \`${process.env.SITE_KEY}\``,
+            `*URL:* ${process.env.BASE_URL}`,
+            `<${process.env.GITHUB_RUN_URL}|View workflow run>`,
+          ].join("\n");
+
+          fetch(process.env.RESPONSE_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              response_type: "ephemeral",
+              text,
+            }),
+          }).then(async (response) => {
+            if (!response.ok) {
+              const body = await response.text();
+              throw new Error(`Slack response failed: ${response.status} ${body}`);
+            }
+          }).catch((error) => {
+            console.error(error);
+            process.exit(1);
+          });
+          EOF
