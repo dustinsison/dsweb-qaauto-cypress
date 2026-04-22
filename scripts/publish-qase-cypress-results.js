@@ -1,34 +1,53 @@
 const {
   findCaseId,
   publishResults,
-  readJsonReport,
+  readJsonReports,
   requireEnv,
 } = require("./qase-results-lib");
 
-function mapCypressState(state, pending) {
-  if (pending || state === "pending") {
+function mapCypressState(test) {
+  if (test.pending) {
     return "skipped";
   }
 
-  switch (state) {
-    case "passed":
-      return "passed";
-    case "failed":
-      return "failed";
-    default:
-      return "invalid";
+  if (test.pass === true) {
+    return "passed";
   }
+
+  if (test.fail === true) {
+    return "failed";
+  }
+
+  if (test.state === "passed" || test.state === "failed" || test.state === "pending") {
+    return mapCypressState({
+      pass: test.state === "passed",
+      fail: test.state === "failed",
+      pending: test.state === "pending",
+    });
+  }
+
+  return "invalid";
+}
+
+function normalizeTitle(test) {
+  if (Array.isArray(test.title)) {
+    return test.title[test.title.length - 1] || "";
+  }
+
+  return test.title || test.fullTitle || "";
 }
 
 function extractResults(report) {
   const tests = Array.isArray(report.tests) ? report.tests : [];
 
-  return tests.map((test) => ({
-    title: test.title || test.fullTitle || "",
-    status: mapCypressState(test.state, test.pending),
-    comment: test.err?.message || "",
-    time_ms: test.duration || 0,
-  }));
+  return tests
+    .map((test) => ({
+      title: normalizeTitle(test),
+      status: mapCypressState(test),
+      comment: test.err?.message || "",
+      time_ms: test.duration || 0,
+    }))
+    .filter((test) => Boolean(test.title));
 }
 
 async function main() {
@@ -37,8 +56,8 @@ async function main() {
   const reportPath =
     process.env.CYPRESS_RESULTS_PATH || ".qa-artifacts/cypress-results.json";
   const titlePrefix = process.env.QASE_CASE_TITLE_PREFIX || "[cypress] ";
-  const report = readJsonReport(reportPath);
-  const extractedResults = extractResults(report);
+  const reports = readJsonReports(reportPath);
+  const extractedResults = reports.flatMap((report) => extractResults(report));
   const caseIdCache = new Map();
   const qaseResults = [];
 

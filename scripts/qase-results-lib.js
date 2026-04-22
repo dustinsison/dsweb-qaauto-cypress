@@ -27,6 +27,16 @@ async function qaseRequest(url, init = {}) {
 }
 
 function readJsonReport(reportPath) {
+  const reports = readJsonReports(reportPath);
+
+  if (reports.length === 0) {
+    throw new Error(`Could not parse JSON results from: ${reportPath}`);
+  }
+
+  return reports[0];
+}
+
+function readJsonReports(reportPath) {
   const raw = fs.readFileSync(reportPath, "utf8").trim();
 
   if (!raw) {
@@ -34,7 +44,7 @@ function readJsonReport(reportPath) {
   }
 
   try {
-    return JSON.parse(raw);
+    return [JSON.parse(raw)];
   } catch {
     const firstBrace = raw.indexOf("{");
 
@@ -45,6 +55,9 @@ function readJsonReport(reportPath) {
     let depth = 0;
     let inString = false;
     let escaping = false;
+
+    const reports = [];
+    let objectStart = -1;
 
     for (let index = firstBrace; index < raw.length; index += 1) {
       const character = raw[index];
@@ -73,6 +86,10 @@ function readJsonReport(reportPath) {
       }
 
       if (character === "{") {
+        if (depth === 0) {
+          objectStart = index;
+        }
+
         depth += 1;
         continue;
       }
@@ -81,12 +98,16 @@ function readJsonReport(reportPath) {
         depth -= 1;
 
         if (depth === 0) {
-          return JSON.parse(raw.slice(firstBrace, index + 1));
+          reports.push(JSON.parse(raw.slice(objectStart, index + 1)));
         }
       }
     }
 
-    throw new Error(`Could not isolate JSON results from: ${reportPath}`);
+    if (reports.length === 0) {
+      throw new Error(`Could not isolate JSON results from: ${reportPath}`);
+    }
+
+    return reports;
   }
 }
 
@@ -141,5 +162,6 @@ module.exports = {
   findCaseId,
   publishResults,
   readJsonReport,
+  readJsonReports,
   requireEnv,
 };
