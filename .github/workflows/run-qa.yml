@@ -11,6 +11,14 @@ on:
         description: "Base URL to test"
         required: true
         default: "https://dustinsison.com"
+      qase_run_id:
+        description: "Optional Qase run ID for publishing results"
+        required: false
+        default: ""
+      qase_project_code:
+        description: "Optional Qase project code for publishing results"
+        required: false
+        default: ""
       response_url:
         description: "Slack response URL for posting the final result"
         required: false
@@ -35,9 +43,24 @@ jobs:
         run: npm ci
 
       - name: Run Cypress tests
-        run: npx cypress run
+        id: run_tests
+        continue-on-error: true
+        run: |
+          mkdir -p .qa-artifacts
+          npx cypress run --reporter json > .qa-artifacts/cypress-results.json
         env:
           CYPRESS_BASE_URL: ${{ inputs.base_url }}
+
+      - name: Publish Qase results
+        if: ${{ always() && inputs.qase_run_id != '' && inputs.qase_project_code != '' }}
+        run: node scripts/publish-qase-cypress-results.js
+        env:
+          QASE_API_TOKEN: ${{ secrets.QASE_API_TOKEN }}
+          QASE_PROJECT_CODE: ${{ inputs.qase_project_code }}
+          QASE_RUN_ID: ${{ inputs.qase_run_id }}
+          QASE_SUITE_ID: 1
+          CYPRESS_RESULTS_PATH: .qa-artifacts/cypress-results.json
+          QASE_CASE_TITLE_PREFIX: "[cypress] "
 
       - name: Upload Cypress artifacts
         if: always()
@@ -45,8 +68,13 @@ jobs:
         with:
           name: cypress-artifacts-${{ inputs.site_key }}
           path: |
+            .qa-artifacts
             cypress/screenshots
             cypress/videos
+
+      - name: Fail workflow if Cypress tests failed
+        if: ${{ steps.run_tests.outcome == 'failure' }}
+        run: exit 1
 
       - name: Post result to Slack
         if: ${{ always() && inputs.response_url != '' }}
