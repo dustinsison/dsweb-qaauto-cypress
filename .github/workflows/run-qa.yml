@@ -65,7 +65,6 @@ jobs:
           QASE_API_TOKEN: ${{ secrets.QASE_API_TOKEN }}
           QASE_PROJECT_CODE: ${{ inputs.qase_project_code }}
           QASE_RUN_ID: ${{ inputs.qase_run_id }}
-          QASE_SUITE_ID: 1
           CYPRESS_RESULTS_PATH: .qa-artifacts/cypress-results.json
           QASE_CASE_TITLE_PREFIX: "[cypress] "
 

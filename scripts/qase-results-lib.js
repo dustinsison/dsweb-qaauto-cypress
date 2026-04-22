@@ -117,11 +117,6 @@ async function findCaseId(projectCode, title) {
     limit: "100",
   });
 
-  const suiteId = process.env.QASE_SUITE_ID;
-  if (suiteId) {
-    searchParams.set("suite_id", suiteId);
-  }
-
   const response = await qaseRequest(
     `https://api.qase.io/v1/case/${projectCode}?${searchParams.toString()}`,
   );
