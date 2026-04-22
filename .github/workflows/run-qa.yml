@@ -47,7 +47,7 @@ jobs:
         continue-on-error: true
         run: |
           mkdir -p .qa-artifacts
-          npx cypress run --reporter json > .qa-artifacts/cypress-results.json
+          npx cypress run --quiet --reporter json > .qa-artifacts/cypress-results.json
         env:
           CYPRESS_BASE_URL: ${{ inputs.base_url }}
 
