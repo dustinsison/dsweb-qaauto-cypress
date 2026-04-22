@@ -37,13 +37,56 @@ function readJsonReport(reportPath) {
     return JSON.parse(raw);
   } catch {
     const firstBrace = raw.indexOf("{");
-    const lastBrace = raw.lastIndexOf("}");
 
-    if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) {
+    if (firstBrace === -1) {
       throw new Error(`Could not parse JSON results from: ${reportPath}`);
     }
 
-    return JSON.parse(raw.slice(firstBrace, lastBrace + 1));
+    let depth = 0;
+    let inString = false;
+    let escaping = false;
+
+    for (let index = firstBrace; index < raw.length; index += 1) {
+      const character = raw[index];
+
+      if (inString) {
+        if (escaping) {
+          escaping = false;
+          continue;
+        }
+
+        if (character === "\\") {
+          escaping = true;
+          continue;
+        }
+
+        if (character === "\"") {
+          inString = false;
+        }
+
+        continue;
+      }
+
+      if (character === "\"") {
+        inString = true;
+        continue;
+      }
+
+      if (character === "{") {
+        depth += 1;
+        continue;
+      }
+
+      if (character === "}") {
+        depth -= 1;
+
+        if (depth === 0) {
+          return JSON.parse(raw.slice(firstBrace, index + 1));
+        }
+      }
+    }
+
+    throw new Error(`Could not isolate JSON results from: ${reportPath}`);
   }
 }
 
