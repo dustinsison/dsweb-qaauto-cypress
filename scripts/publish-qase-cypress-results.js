@@ -37,13 +37,42 @@ function normalizeTitle(test) {
   return test.title || test.fullTitle || "";
 }
 
+function buildStatusLookup(report) {
+  const lookup = new Map();
+
+  for (const passedTest of Array.isArray(report.passes) ? report.passes : []) {
+    const title = normalizeTitle(passedTest);
+    if (title) {
+      lookup.set(title, "passed");
+    }
+  }
+
+  for (const failedTest of Array.isArray(report.failures) ? report.failures : []) {
+    const title = normalizeTitle(failedTest);
+    if (title) {
+      lookup.set(title, "failed");
+    }
+  }
+
+  for (const pendingTest of Array.isArray(report.pending) ? report.pending : []) {
+    const title = normalizeTitle(pendingTest);
+    if (title) {
+      lookup.set(title, "skipped");
+    }
+  }
+
+  return lookup;
+}
+
 function extractResults(report) {
   const tests = Array.isArray(report.tests) ? report.tests : [];
+  const statusLookup = buildStatusLookup(report);
 
   return tests
     .map((test) => ({
       title: normalizeTitle(test),
-      status: mapCypressState(test),
+      status:
+        statusLookup.get(normalizeTitle(test)) || mapCypressState(test),
       comment: test.err?.message || "",
       time_ms: test.duration || 0,
     }))
