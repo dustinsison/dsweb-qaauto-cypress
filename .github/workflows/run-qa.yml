@@ -51,6 +51,13 @@ jobs:
         env:
           CYPRESS_BASE_URL: ${{ inputs.base_url }}
 
+      - name: Debug Cypress JSON report
+        if: always()
+        run: |
+          ls -la .qa-artifacts
+          echo "----- report head -----"
+          head -n 120 .qa-artifacts/cypress-results.json || true
+
       - name: Publish Qase results
         if: ${{ always() && inputs.qase_run_id != '' && inputs.qase_project_code != '' }}
         run: node scripts/publish-qase-cypress-results.js
